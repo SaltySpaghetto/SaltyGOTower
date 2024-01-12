@@ -3,7 +3,6 @@ package server
 import (
 	"fmt"
 	"net"
-	"os"
 	"sunshine/config"
 	"sunshine/player"
 )
@@ -18,7 +17,7 @@ func (s *Server) listenTCP() {
 	if err != nil {
 		fmt.Print(config.LangTcpOpenErr)
 		fmt.Println(err)
-		os.Exit(1)
+		return
 	}
 
 	defer func(listener net.Listener) {
@@ -31,7 +30,7 @@ func (s *Server) listenTCP() {
 		if err != nil {
 			fmt.Print(config.LangTcpAcceptErr)
 			fmt.Println(err)
-			os.Exit(1)
+			return
 		}
 
 		fmt.Printf(config.LangTcpClientConnected, conn.RemoteAddr().String())

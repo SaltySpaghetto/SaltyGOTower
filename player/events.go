@@ -1,10 +1,11 @@
 package player
 
 import (
+	"bufio"
 	"encoding/binary"
-	"fmt"
 	"net"
 	"regexp"
+	"sunshine/config"
 )
 
 // evLogin is called when a player sends a TCPMsgLogin message
@@ -30,35 +31,23 @@ func (player *Player) evLogin(players Players) {
 		return
 	}
 
-	// Read Name Value (Max 16)
-	for {
-		// Read 1 Character
-		char := make([]byte, 1)
-		_, err := player.TCPConn.Read(char)
-		if err != nil {
-			player.Kill(players)
-			fmt.Println(err)
-			return
-		}
+	// Read Name
+	str, err := bufio.NewReader(player.TCPConn).ReadString('\000')
+	if err != nil {
+		player.Kill(players)
+		return
+	}
 
-		// Break if character is null
-		if char[0] == '\000' {
-			break
+	// Clean up name
+	for _, char := range str {
+		if name := player.Name + string(char); regexp.MustCompile(config.PlayerNamePattern).MatchString(name) {
+			player.Name = name
 		}
+	}
 
-		// Test if character matches regex
-		newName := player.Name + string(char)
-		matched, err := regexp.MatchString(`^[a-zA-Z0-9_]+$`, newName)
-		if err != nil {
-			player.Kill(players)
-			fmt.Println(err)
-			return
-		}
-
-		// Push changes to name value if it matches the regex
-		if matched {
-			player.Name = newName
-		}
+	if len(player.Name) < 3 {
+		player.Kill(players)
+		return
 	}
 
 	// UUID is 36 characters long, and the null terminator is 1 character long.

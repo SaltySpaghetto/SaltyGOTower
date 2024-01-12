@@ -3,7 +3,7 @@ package config
 // -- Default Conf Constants -- //
 const TcpDefaultPort uint16 = 7766
 const UdpDefaultPort uint16 = 7767
-const PlayerNamePattern = "^[a-zA-Z0-9_]{3,16}$"
+const PlayerNamePattern = "^[a-zA-Z0-9_]{1,16}$"
 
 // -- Color Constants -- //
 const ColorRed = "\033[31m"
