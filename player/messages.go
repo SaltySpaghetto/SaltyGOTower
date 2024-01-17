@@ -1,21 +1,22 @@
 package player
 
 import (
+	"GOTower/config"
 	"encoding/binary"
 	"math"
 )
 
 // TCP Message Constants
 const (
-	TCPMsgLogin = iota
-	TCPMsgChat
-	TCPMsgRoomChange
-	TCPMsgUUID
-	TCPMsgPlayerLeft
-	TCPMsgUdpReady
+	TCPMsgLogin = 0
+	// TCPMsgChat = 1
+	// TCPMsgRoomChange = 2
+	TCPMsgUUID       = 3
+	TCPMsgPlayerLeft = 4
+	TCPMsgUdpReady   = 5
 )
 
-// Data updated consistently by UDP packets
+// Data represents the data constantly updated by a UDP Client.
 type Data struct {
 	UUID string
 
@@ -32,7 +33,7 @@ type Data struct {
 
 // ToBytes converts Data to a byte slice
 func (d *Data) ToBytes() []byte {
-	b := make([]byte, 54)
+	b := make([]byte, config.UDPDatagramSize)
 	copy(b[0:37], d.UUID)
 	binary.LittleEndian.PutUint32(b[37:41], math.Float32bits(d.X))
 	binary.LittleEndian.PutUint32(b[41:45], math.Float32bits(d.Y))

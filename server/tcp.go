@@ -1,40 +1,41 @@
 package server
 
 import (
+	"GOTower/config"
+	"GOTower/player"
 	"fmt"
 	"net"
-	"sunshine/config"
-	"sunshine/player"
 )
 
-func (s *Server) listenTCP() {
-	fmt.Printf(config.LangTcpListening, s.PortTCP)
+// initializeTCP is the main TCP Component Handler for GoTower.
+func (s *Server) initializeTCP() {
+	fmt.Printf(config.LangTcpListening, s.TCPPort)
 	defer fmt.Print(config.LangTcpClosed)
 
-	// I looooooove ipv4!
-	listener, err := net.Listen("tcp4", fmt.Sprintf(":%d", s.PortTCP))
-
+	// IPv4 *only* because IPv6 is overcomplicating things for this type of application.
+	listener, err := net.Listen("tcp4", fmt.Sprintf(":%d", s.TCPPort))
 	if err != nil {
 		fmt.Print(config.LangTcpOpenErr)
-		fmt.Println(err)
+		fmt.Println(err) // Do not exit because this is the main thread.
 		return
 	}
 
+	// Deferred so the OS doesn't have to free the socket/port.
 	defer func(listener net.Listener) {
 		_ = listener.Close()
 	}(listener)
 
 	for {
-		// YEEHAW
+		// Accept TCP Connections.
 		conn, err := listener.Accept()
 		if err != nil {
 			fmt.Print(config.LangTcpAcceptErr)
 			fmt.Println(err)
 			return
 		}
-
 		fmt.Printf(config.LangTcpClientConnected, conn.RemoteAddr().String())
 
+		// Initialize the Player who has connected.
 		p := player.NewPlayer(conn)
 		s.Players.Mutex.Lock()
 		s.Players.Map[p.UUID] = p

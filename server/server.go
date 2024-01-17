@@ -1,28 +1,29 @@
 package server
 
 import (
+	"GOTower/config"
+	"GOTower/player"
 	"fmt"
-	"sunshine/config"
-	"sunshine/player"
 	"sync"
 )
 
-// Server data structure
+// Server is a structure that stores important data about the current server instance.
 type Server struct {
-	PortTCP uint16
-	PortUDP uint16
+	TCPPort uint
+	UDPPort uint
 
-	MaxPlayers uint16
+	MaxPlayers uint
 	Players    player.Players
 }
 
-// NewServer creates a new server object
+// NewServer initializes a server instance using a config.ini file.
 func NewServer(portTCP uint16, portUDP uint16) *Server {
+	conf := config.LoadConfig("config.ini")
 	return &Server{
-		PortTCP: portTCP,
-		PortUDP: portUDP,
+		TCPPort: conf.TCPPort,
+		UDPPort: conf.UDPPort,
 
-		MaxPlayers: 255,
+		MaxPlayers: conf.MaxPlayers,
 		Players: player.Players{
 			Map:   make(map[string]*player.Player),
 			Mutex: &sync.Mutex{},
@@ -30,12 +31,12 @@ func NewServer(portTCP uint16, portUDP uint16) *Server {
 	}
 }
 
-// Listen for incoming TCP connections
-func (s *Server) Listen() {
+// Initialize initializes both the TCP and UDP Components
+func (s *Server) Initialize() {
 	fmt.Print(config.Logo)
 	fmt.Print(config.LangServerWelcome)
 	defer fmt.Print(config.LangServerGoodbye)
 
-	go s.listenUDP()
-	s.listenTCP()
+	go s.initializeUDP()
+	s.initializeTCP()
 }

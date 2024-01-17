@@ -1,12 +1,12 @@
 package main
 
 import (
-	"sunshine/config"
-	"sunshine/server"
+	"GOTower/config"
+	"GOTower/server"
 )
 
-// "BOOOOOORING" - Omocat
+// main is the program's entry point as defined in the Go standard.
 func main() {
 	srv := server.NewServer(config.TcpDefaultPort, config.UdpDefaultPort)
-	srv.Listen()
+	srv.Initialize()
 }

@@ -1,11 +1,17 @@
 package config
 
+import _ "embed"
+
 // -- Default Conf Constants -- //
 const TcpDefaultPort uint16 = 7766
 const UdpDefaultPort uint16 = 7767
 const PlayerNamePattern = "^[a-zA-Z0-9_]{1,16}$"
 
-// -- Color Constants -- //
+// SEC - Message Sizes
+const UDPDatagramSize = 54
+const UDPHolepunchSize = 2
+
+// SEC - Colors
 const ColorRed = "\033[31m"
 const ColorGreen = "\033[32m"
 const ColorYellow = "\033[33m"
@@ -15,32 +21,32 @@ const ColorCyan = "\033[36m"
 const ColorWhite = "\033[37m"
 const ColorReset = "\033[0m"
 
-// -- Player Language Constants -- //
+// SEC - Player Language
 const PrefixPlayer = ColorCyan + "Player " + ColorWhite + "| " + ColorReset
-const LangPlayerJoined = PrefixPlayer + "Player %s joined the game.\n"
-const LangPlayerLeft = PrefixPlayer + "Player %s left the game.\n"
+const LangPlayerLeft = PrefixPlayer + "Player " + ColorYellow + "%s left the game.\n" + ColorReset
 
-// -- Server Language Constants -- //
-const Logo = ColorYellow + `                          ,--.    ,--.    
- ,---.,--.,--,--,--, ,---.|  ,---.'--',--,--,,----.
-(  .-'|  ||  |      (  .-'|  .-.  ,--|      | .-. :
-.-'  ''  ''  |  ||  .-'  '|  | |  |  |  ||  \   --.
-'----' '----''--''--'----''--' '--'--'--''--''----'
-` + ColorReset
+// SEC - Server Language
+//
+//go:embed logo.txt
+var Logo string
 
-const PrefixLog = ColorCyan + "Log " + ColorWhite + "| " + ColorReset
-const PrefixError = ColorRed + "Err " + ColorWhite + "| " + ColorReset
+const Name = ColorCyan + "≡GO" + ColorPurple + "Tower" + ColorReset
 
-const LangServerWelcome = PrefixLog + "Hello! Welcome to the Sunshine Server!\n"
-const LangServerGoodbye = PrefixLog + "Exiting. Goodbye!\n"
+const PrefixLog = ColorCyan + "Log " + ColorPurple + "| " + ColorReset
+const PrefixError = ColorRed + "Err " + ColorPurple + "| " + ColorReset
 
-const LangTcpListening = PrefixLog + "TCP server listening on TCP:" + ColorYellow + "%d.\n"
-const LangTcpClosed = PrefixLog + "TCP server closed.\n"
-const LangTcpOpenErr = PrefixError + "TCP server failed to open. Please make sure the port is not in use.\n"
-const LangTcpAcceptErr = PrefixError + "TCP server failed to accept a connection.\n"
-const LangTcpClientConnected = PrefixLog + "TCP client connected from " + ColorYellow + "%s" + ColorReset + ".\n"
+const LangServerWelcome = PrefixLog + "Initializing " + Name + ".\n"
+const LangServerGoodbye = PrefixLog + "Exiting now.\n"
 
-const LangUdpListening = PrefixLog + "UDP server listening on UDP:" + ColorYellow + "%d.\n"
-const LangUdpClosed = PrefixLog + "UDP server closed.\n"
-const LangUdpOpenErr = PrefixError + "UDP server failed to open. Please make sure the port is not in use.\n"
-const LangUdpMessageReceived = PrefixLog + "UDP message received from " + ColorYellow + "%s" + ColorReset + ": " + ColorYellow + "%s" + ColorReset + ".\n"
+const LangTcpListening = PrefixLog + "TCP Component initialized on TCP:" + ColorYellow + "%d.\n"
+const LangTcpClosed = PrefixLog + "TCP Component exited.\n"
+const LangTcpOpenErr = PrefixError + "TCP Component failed to start. Please ensure the port specified is not in use.\n"
+const LangTcpAcceptErr = PrefixError + "TCP Component failed to accept a connection.\n"
+const LangTcpClientConnected = PrefixLog + "TCP Component accepted a connection from " + ColorYellow + "%s" + ColorReset + ".\n"
+
+const LangUdpListening = PrefixLog + "UDP Component initialized on UDP:" + ColorYellow + "%d.\n"
+const LangUdpClosed = PrefixLog + "UDP Component exited.\n"
+const LangUdpOpenErr = PrefixError + "UDP Component failed to start. Please ensure the port is not in use.\n"
+
+const LangConfigNotfoundErr = PrefixError + "Could not find the config file.\n"
+const LangConfigFormatErr = PrefixError + "Config file is not formatted correctly.\n"

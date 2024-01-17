@@ -1,14 +1,14 @@
 package player
 
 import (
+	"GOTower/config"
 	"bufio"
 	"encoding/binary"
 	"net"
 	"regexp"
-	"sunshine/config"
 )
 
-// evLogin is called when a player sends a TCPMsgLogin message
+// evLogin is an event fired upon receiving a TCPMsgLogin typed message from a Player.
 func (player *Player) evLogin(players Players) {
 	// You can't log in twice
 	if player.State != StateConnected {
@@ -62,6 +62,5 @@ func (player *Player) evLogin(players Players) {
 		return
 	}
 
-	// Bitch I'm Verified! https://youtu.be/BpJZAKy3-EI
 	player.State = StateVerified
 }

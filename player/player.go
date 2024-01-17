@@ -1,17 +1,16 @@
 package player
 
 import (
+	"GOTower/config"
 	"fmt"
 	"github.com/google/uuid"
 	"net"
-	"sunshine/config"
 	"sync"
 )
 
 const (
 	StateConnected = iota
 	StateVerified
-	// StatePaused
 )
 
 // Player data structure
@@ -43,16 +42,19 @@ func NewPlayer(conn net.Conn) *Player {
 	}
 }
 
-// Kill kills the player! DIE YOU FUCKING FAGGOT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// Kill is an eloquently named function that disconnects the player
+// and alerts all players in the same room of their sudden absence.
 func (player *Player) Kill(players Players) {
 	player.Active = false
 	players.Mutex.Lock()
 
+	// 38 = Type + UUID + \000.
 	b := make([]byte, 38)
 	b[0] = TCPMsgPlayerLeft
 	copy(b[1:37], player.UUID)
 
 	for _, p := range players.Map {
+		// Alert every player in the same room.
 		if p.Data.Room == player.Data.Room {
 			_, _ = p.TCPConn.Write(b)
 		}
@@ -62,7 +64,7 @@ func (player *Player) Kill(players Players) {
 	fmt.Printf(config.LangPlayerLeft, player.UUID)
 }
 
-// Listen for TCP Messages
+// Listen is how a Player thread listens for incoming TCP messages.
 func (player *Player) Listen(players Players) {
 	defer func() {
 		_ = player.TCPConn.Close()
@@ -79,11 +81,11 @@ func (player *Player) Listen(players Players) {
 		}
 
 		switch msgType[0] {
-		case TCPMsgLogin:
+		case TCPMsgLogin: // Fired on Player Login ONLY.
 			player.evLogin(players)
 			break
 
-		case TCPMsgUdpReady:
+		case TCPMsgUdpReady: // Fired when UDP hole punching succeeds.
 			player.UDPReady = true
 			break
 
@@ -94,17 +96,10 @@ func (player *Player) Listen(players Players) {
 	}
 }
 
-// Players is simply a wrap around a map. That's a funny rhyme, ain't it?
+// Players is simply a wrap around a map. Quite the rhyme, isn't it?
 type Players struct {
 	Map   map[string]*Player
 	Mutex *sync.Mutex
-}
-
-// GetPlayerByUUID does just that!
-func (players Players) GetPlayerByUUID(uuid string) *Player {
-	players.Mutex.Lock()
-	defer players.Mutex.Unlock()
-	return players.Map[uuid]
 }
 
 // Broadcast sends data to every player in a specified room. Used for updating UDP data. MUST lock the mutex before calling this function.
