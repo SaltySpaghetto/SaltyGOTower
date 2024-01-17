@@ -16,15 +16,15 @@ const (
 
 // Player data structure
 type Player struct {
-	UUID    string
-	TCPConn net.Conn
-	UDPConn net.Conn
-	UDPAddr net.UDPAddr
-	State   uint8
-	Active  bool
+	UUID     string
+	TCPConn  net.Conn
+	UDPConn  net.Conn
+	UDPReady bool
+	UDPAddr  net.UDPAddr
+	State    uint8
+	Active   bool
 
 	Name string
-	Room uint32
 	Data Data
 }
 
@@ -47,6 +47,16 @@ func NewPlayer(conn net.Conn) *Player {
 func (player *Player) Kill(players Players) {
 	player.Active = false
 	players.Mutex.Lock()
+
+	b := make([]byte, 38)
+	b[0] = TCPMsgPlayerLeft
+	copy(b[1:37], player.UUID)
+
+	for _, p := range players.Map {
+		if p.Data.Room == player.Data.Room {
+			_, _ = p.TCPConn.Write(b)
+		}
+	}
 	delete(players.Map, player.UUID)
 	players.Mutex.Unlock()
 	fmt.Printf(config.LangPlayerLeft, player.UUID)
@@ -73,6 +83,10 @@ func (player *Player) Listen(players Players) {
 			player.evLogin(players)
 			break
 
+		case TCPMsgUdpReady:
+			player.UDPReady = true
+			break
+
 		default:
 			player.Kill(players)
 			return
@@ -93,13 +107,11 @@ func (players Players) GetPlayerByUUID(uuid string) *Player {
 	return players.Map[uuid]
 }
 
-// Broadcast sends data to every player in a specified room. Used for updating UDP data.
-func (players Players) Broadcast(data Data, room uint32) {
-	players.Mutex.Lock()
-	defer players.Mutex.Unlock()
+// Broadcast sends data to every player in a specified room. Used for updating UDP data. MUST lock the mutex before calling this function.
+func (players Players) Broadcast(data Data, listener net.PacketConn) {
 	for _, p := range players.Map {
-		if p.Active && p.State == StateVerified && p.Room == room && p.UUID != data.UUID {
-			_, err := fmt.Fprintf(p.UDPConn, "%s", data.ToBytes())
+		if p.Active && p.State == StateVerified && p.Data.Room == data.Room && p.UUID != data.UUID {
+			_, err := listener.WriteTo(data.ToBytes(), &p.UDPAddr)
 			if err != nil {
 				fmt.Println(err)
 				p.Kill(players)

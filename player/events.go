@@ -45,7 +45,7 @@ func (player *Player) evLogin(players Players) {
 		}
 	}
 
-	if len(player.Name) < 3 {
+	if len(player.Name) < 1 {
 		player.Kill(players)
 		return
 	}
