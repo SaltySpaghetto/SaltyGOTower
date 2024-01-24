@@ -57,6 +57,7 @@ func (s *Server) initializeUDP() {
 				}
 			}
 		} else if n != config.UDPDatagramSize {
+			fmt.Printf(config.PrefixError+"UDP Component received a malformed packet from %s.\n", addr.String())
 			continue
 		}
 

@@ -31,8 +31,26 @@ func (player *Player) evLogin(players Players) {
 		return
 	}
 
+	// Read Version
+	reader := bufio.NewReader(player.TCPConn)
+	version, err := reader.ReadString('\000')
+	if err != nil {
+		player.Kill(players)
+		return
+	}
+
+	version = version[:len(version)-1]
+
+	// Check Version
+	if version != config.ServerVersion {
+		player.TCPConn.Write([]byte{TCPWrongVersion})
+		player.Kill(players)
+		return
+	}
+
 	// Read Name
-	str, err := bufio.NewReader(player.TCPConn).ReadString('\000')
+	str, err := reader.ReadString('\000')
+
 	if err != nil {
 		player.Kill(players)
 		return

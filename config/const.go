@@ -3,12 +3,13 @@ package config
 import _ "embed"
 
 // -- Default Conf Constants -- //
+const ServerVersion string = "24w04a"
 const TcpDefaultPort uint16 = 7766
 const UdpDefaultPort uint16 = 7767
 const PlayerNamePattern = "^[a-zA-Z0-9_]{1,16}$"
 
 // SEC - Message Sizes
-const UDPDatagramSize = 54
+const UDPDatagramSize = 59
 const UDPHolepunchSize = 2
 
 // SEC - Colors

@@ -14,6 +14,7 @@ const (
 	TCPMsgUUID       = 3
 	TCPMsgPlayerLeft = 4
 	TCPMsgUdpReady   = 5
+	TCPWrongVersion  = 6
 )
 
 // Data represents the data constantly updated by a UDP Client.
@@ -29,6 +30,9 @@ type Data struct {
 	Room    uint16
 	Palette uint8
 	Name    string
+
+	Character uint8
+	Pattern   uint32
 }
 
 // ToBytes converts Data to a byte slice
@@ -42,6 +46,8 @@ func (d *Data) ToBytes() []byte {
 	b[50] = byte(d.XScale)
 	binary.LittleEndian.PutUint16(b[51:53], d.Room)
 	b[53] = d.Palette
+	b[54] = d.Character
+	binary.LittleEndian.PutUint32(b[55:59], d.Pattern)
 	b = append(b, []byte(d.Name)...)
 	return append(b, '\000')
 }
@@ -57,5 +63,7 @@ func DataFromBytes(b []byte) Data {
 	data.XScale = int8(b[50])
 	data.Room = binary.LittleEndian.Uint16(b[51:53])
 	data.Palette = b[53]
+	data.Character = b[54]
+	data.Pattern = binary.LittleEndian.Uint32(b[55:59])
 	return data
 }
