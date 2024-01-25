@@ -1,7 +1,7 @@
 package server
 
 import (
-	"GOTower/config"
+	"GOTower/constants"
 	"GOTower/player"
 	"encoding/binary"
 	"fmt"
@@ -13,13 +13,13 @@ import (
 
 // initializeUDP is the main UDP Component Handler for GoTower.
 func (s *Server) initializeUDP() {
-	fmt.Printf(config.LangUdpListening, s.UDPPort)
-	defer fmt.Print(config.LangUdpClosed)
+	fmt.Printf(constants.LangUdpListening, s.UDPPort)
+	defer fmt.Print(constants.LangUdpClosed)
 
 	// IPv4 *only* because IPv6 is overcomplicating things for this type of application.
 	listener, err := net.ListenPacket("udp4", fmt.Sprintf(":%d", s.UDPPort))
 	if err != nil {
-		fmt.Print(config.LangUdpOpenErr)
+		fmt.Print(constants.LangUdpOpenErr)
 		os.Exit(1) // Exit because this isn't the main thread.
 	}
 
@@ -30,23 +30,23 @@ func (s *Server) initializeUDP() {
 
 	for {
 		// SEC - Read Packet
-		buffer := make([]byte, config.UDPDatagramSize)
+		buffer := make([]byte, constants.UDPDatagramSize)
 		n, addr, err := listener.ReadFrom(buffer)
 		if err != nil {
-			fmt.Print(config.LangUdpClosed)
+			fmt.Print(constants.LangUdpClosed)
 			return
 		}
 
 		// If n is equal to 2, this is a "hole punch message" used for UDP hole punching.
 		// if it is not equal to 2, it MUST be 54, as the only other type of UDP message
 		// is the player update message, and it is strictly 54 bytes.
-		if n == config.UDPHolepunchSize {
+		if n == constants.UDPHolepunchSize {
 			port := binary.LittleEndian.Uint16(buffer)
 
 			for _, p := range s.Players.Map {
 				// Match IP:PORT to the correct player.
 				if p.UDPAddr.String() == addr.String() && !p.UDPReady && p.UDPAddr.Port == int(port) {
-					b := make([]byte, config.UDPHolepunchSize) //! Response is simply the server's port. May not be necessary?
+					b := make([]byte, constants.UDPHolepunchSize) //! Response is simply the server's port. May not be necessary?
 					binary.LittleEndian.PutUint16(b, uint16(s.UDPPort))
 					_, err := listener.WriteTo(b, addr)
 					if err != nil {
@@ -56,8 +56,8 @@ func (s *Server) initializeUDP() {
 					continue
 				}
 			}
-		} else if n != config.UDPDatagramSize {
-			fmt.Printf(config.PrefixError+"UDP Component received a malformed packet from %s.\n", addr.String())
+		} else if n != constants.UDPDatagramSize {
+			fmt.Printf(constants.PrefixError+"UDP Component received a malformed packet from %s.\n", addr.String())
 			continue
 		}
 

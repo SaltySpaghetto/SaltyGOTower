@@ -1,7 +1,7 @@
 package player
 
 import (
-	"GOTower/config"
+	"GOTower/constants"
 	"fmt"
 	"github.com/google/uuid"
 	"net"
@@ -61,7 +61,7 @@ func (player *Player) Kill(players Players) {
 	}
 	delete(players.Map, player.UUID)
 	players.Mutex.Unlock()
-	fmt.Printf(config.LangPlayerLeft, player.UUID)
+	fmt.Printf(constants.LangPlayerLeft, player.UUID)
 }
 
 // Listen is how a Player thread listens for incoming TCP messages.
@@ -89,11 +89,19 @@ func (player *Player) Listen(players Players) {
 			player.UDPReady = true
 			break
 
+		case TCPMsgChat: // Fired when a player sends a chat message.
+			player.evChat(players)
+			break
+
 		default:
 			player.Kill(players)
 			return
 		}
 	}
+}
+
+func (player *Player) Chat() {
+
 }
 
 // Players is simply a wrap around a map. Quite the rhyme, isn't it?
@@ -107,6 +115,19 @@ func (players Players) Broadcast(data Data, listener net.PacketConn) {
 	for _, p := range players.Map {
 		if p.Active && p.State == StateVerified && p.Data.Room == data.Room && p.UUID != data.UUID {
 			_, err := listener.WriteTo(data.ToBytes(), &p.UDPAddr)
+			if err != nil {
+				fmt.Println(err)
+				p.Kill(players)
+			}
+		}
+	}
+}
+
+// BroadcastTCP sends a TCP message to every single player. Must lock Mutex before calling.
+func (players Players) BroadcastTCP(data []byte) {
+	for _, p := range players.Map {
+		if p.Active && p.State == StateVerified {
+			_, err := p.TCPConn.Write(data)
 			if err != nil {
 				fmt.Println(err)
 				p.Kill(players)

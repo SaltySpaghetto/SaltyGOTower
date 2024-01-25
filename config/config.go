@@ -1,6 +1,7 @@
 package config
 
 import (
+	"GOTower/constants"
 	"fmt"
 	"gopkg.in/ini.v1"
 	"os"
@@ -18,7 +19,7 @@ type Config struct {
 func LoadConfig(path string) Config {
 	cfg, err := ini.Load(path)
 	if err != nil {
-		fmt.Printf(LangConfigNotfoundErr)
+		fmt.Printf(constants.LangConfigNotfoundErr)
 		os.Exit(-1)
 	}
 
@@ -32,7 +33,7 @@ func LoadConfig(path string) Config {
 	conf.MaxPlayers, err = cfg.Section("administration").Key("max_players").Uint()
 
 	if err != nil {
-		fmt.Printf(LangConfigFormatErr)
+		fmt.Printf(constants.LangConfigFormatErr)
 		os.Exit(1)
 	}
 

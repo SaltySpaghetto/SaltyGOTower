@@ -2,6 +2,7 @@ package server
 
 import (
 	"GOTower/config"
+	"GOTower/constants"
 	"GOTower/player"
 	"fmt"
 	"sync"
@@ -33,9 +34,9 @@ func NewServer(portTCP uint16, portUDP uint16) *Server {
 
 // Initialize initializes both the TCP and UDP Components
 func (s *Server) Initialize() {
-	fmt.Print(config.Logo)
-	fmt.Print(config.LangServerWelcome)
-	defer fmt.Print(config.LangServerGoodbye)
+	fmt.Print(constants.Logo)
+	fmt.Print(constants.LangServerWelcome)
+	defer fmt.Print(constants.LangServerGoodbye)
 
 	go s.initializeUDP()
 	s.initializeTCP()

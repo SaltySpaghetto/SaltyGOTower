@@ -1,7 +1,7 @@
 package server
 
 import (
-	"GOTower/config"
+	"GOTower/constants"
 	"GOTower/player"
 	"fmt"
 	"net"
@@ -9,13 +9,13 @@ import (
 
 // initializeTCP is the main TCP Component Handler for GoTower.
 func (s *Server) initializeTCP() {
-	fmt.Printf(config.LangTcpListening, s.TCPPort)
-	defer fmt.Print(config.LangTcpClosed)
+	fmt.Printf(constants.LangTcpListening, s.TCPPort)
+	defer fmt.Print(constants.LangTcpClosed)
 
 	// IPv4 *only* because IPv6 is overcomplicating things for this type of application.
 	listener, err := net.Listen("tcp4", fmt.Sprintf(":%d", s.TCPPort))
 	if err != nil {
-		fmt.Print(config.LangTcpOpenErr)
+		fmt.Print(constants.LangTcpOpenErr)
 		fmt.Println(err) // Do not exit because this is the main thread.
 		return
 	}
@@ -29,11 +29,11 @@ func (s *Server) initializeTCP() {
 		// Accept TCP Connections.
 		conn, err := listener.Accept()
 		if err != nil {
-			fmt.Print(config.LangTcpAcceptErr)
+			fmt.Print(constants.LangTcpAcceptErr)
 			fmt.Println(err)
 			return
 		}
-		fmt.Printf(config.LangTcpClientConnected, conn.RemoteAddr().String())
+		fmt.Printf(constants.LangTcpClientConnected, conn.RemoteAddr().String())
 
 		// Initialize the Player who has connected.
 		p := player.NewPlayer(conn)

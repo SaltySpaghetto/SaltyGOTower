@@ -1,7 +1,7 @@
 package player
 
 import (
-	"GOTower/config"
+	"GOTower/constants"
 	"encoding/binary"
 	"math"
 )
@@ -9,7 +9,7 @@ import (
 // TCP Message Constants
 const (
 	TCPMsgLogin = 0
-	// TCPMsgChat = 1
+	TCPMsgChat  = 1
 	// TCPMsgRoomChange = 2
 	TCPMsgUUID       = 3
 	TCPMsgPlayerLeft = 4
@@ -37,7 +37,7 @@ type Data struct {
 
 // ToBytes converts Data to a byte slice
 func (d *Data) ToBytes() []byte {
-	b := make([]byte, config.UDPDatagramSize)
+	b := make([]byte, constants.UDPDatagramSize)
 	copy(b[0:37], d.UUID)
 	binary.LittleEndian.PutUint32(b[37:41], math.Float32bits(d.X))
 	binary.LittleEndian.PutUint32(b[41:45], math.Float32bits(d.Y))
@@ -66,4 +66,18 @@ func DataFromBytes(b []byte) Data {
 	data.Character = b[54]
 	data.Pattern = binary.LittleEndian.Uint32(b[55:59])
 	return data
+}
+
+type ChatMessage struct {
+	Name string
+	Msg  string
+}
+
+func (c *ChatMessage) ToBytes() []byte {
+	b := make([]byte, 2+len(c.Name)+len(c.Msg))
+	b[0] = TCPMsgChat
+	copy(b[1:1+len(c.Name)], c.Name)
+	b[1+len(c.Name)] = '\000'
+	copy(b[2+len(c.Name):], c.Msg)
+	return b
 }

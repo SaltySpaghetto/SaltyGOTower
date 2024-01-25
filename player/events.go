@@ -1,9 +1,10 @@
 package player
 
 import (
-	"GOTower/config"
+	"GOTower/constants"
 	"bufio"
 	"encoding/binary"
+	"fmt"
 	"net"
 	"regexp"
 )
@@ -42,7 +43,7 @@ func (player *Player) evLogin(players Players) {
 	version = version[:len(version)-1]
 
 	// Check Version
-	if version != config.ServerVersion {
+	if version != constants.ServerVersion {
 		player.TCPConn.Write([]byte{TCPWrongVersion})
 		player.Kill(players)
 		return
@@ -58,7 +59,7 @@ func (player *Player) evLogin(players Players) {
 
 	// Clean up name
 	for _, char := range str {
-		if name := player.Name + string(char); regexp.MustCompile(config.PlayerNamePattern).MatchString(name) {
+		if name := player.Name + string(char); regexp.MustCompile(constants.PlayerNamePattern).MatchString(name) {
 			player.Name = name
 		}
 	}
@@ -81,4 +82,32 @@ func (player *Player) evLogin(players Players) {
 	}
 
 	player.State = StateVerified
+}
+
+// evChat is fired when a Player sends a chat message. It cleans the message and broadcasts it to everyone else.
+func (player *Player) evChat(players Players) {
+	reader := bufio.NewReader(player.TCPConn)
+	str, err := reader.ReadString('\000')
+	if err != nil {
+		player.Kill(players)
+		return
+	}
+
+	// Clean the string
+	for _, char := range str {
+		if newstr := str + string(char); regexp.MustCompile(constants.PlayerChatPattern).MatchString(str) {
+			str = newstr
+		}
+	}
+
+	msg := ChatMessage{
+		Msg:  str,
+		Name: player.Name,
+	}
+
+	fmt.Printf("%s (%s): %s\n", msg.Name, player.UUID, msg.Msg)
+
+	players.Mutex.Lock()
+	players.BroadcastTCP(msg.ToBytes())
+	players.Mutex.Unlock()
 }
