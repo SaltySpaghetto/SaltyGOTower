@@ -1,4 +1,6 @@
 package constants
 
-const UDPDatagramSize = 59
-const UDPHolepunchSize = 2
+const (
+	UDPDatagramSize  = 60
+	UDPHolepunchSize = 2
+)

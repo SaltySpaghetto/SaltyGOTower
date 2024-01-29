@@ -1,12 +1,13 @@
 package player
 
 import (
-	"GOTower/constants"
 	"bufio"
 	"encoding/binary"
 	"fmt"
 	"net"
 	"regexp"
+
+	"GOTower/constants"
 )
 
 // evLogin is an event fired upon receiving a TCPMsgLogin typed message from a Player.
@@ -51,7 +52,6 @@ func (player *Player) evLogin(players Players) {
 
 	// Read Name
 	str, err := reader.ReadString('\000')
-
 	if err != nil {
 		player.Kill(players)
 		return
@@ -82,6 +82,15 @@ func (player *Player) evLogin(players Players) {
 	}
 
 	player.State = StateVerified
+
+	// Alert everyone of the joining player.
+
+	players.Mutex.Lock()
+	players.BroadcastTCP(ChatMessage{
+		Msg:  fmt.Sprintf("Player %s entered the tower.", player.Name),
+		Name: "Server",
+	}.ToBytes())
+	players.Mutex.Unlock()
 }
 
 // evChat is fired when a Player sends a chat message. It cleans the message and broadcasts it to everyone else.

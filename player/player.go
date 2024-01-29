@@ -1,11 +1,13 @@
 package player
 
 import (
-	"GOTower/constants"
 	"fmt"
-	"github.com/google/uuid"
 	"net"
 	"sync"
+
+	"github.com/google/uuid"
+
+	"GOTower/constants"
 )
 
 const (
@@ -60,6 +62,13 @@ func (player *Player) Kill(players Players) {
 		}
 	}
 	delete(players.Map, player.UUID)
+
+	// Alert everyone of the leaving player.
+	players.BroadcastTCP(ChatMessage{
+		Msg:  fmt.Sprintf("Player %s left the tower.", player.Name),
+		Name: "Server",
+	}.ToBytes())
+
 	players.Mutex.Unlock()
 	fmt.Printf(constants.LangPlayerLeft, player.UUID)
 }
@@ -101,7 +110,6 @@ func (player *Player) Listen(players Players) {
 }
 
 func (player *Player) Chat() {
-
 }
 
 // Players is simply a wrap around a map. Quite the rhyme, isn't it?

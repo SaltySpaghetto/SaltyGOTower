@@ -1,9 +1,10 @@
 package player
 
 import (
-	"GOTower/constants"
 	"encoding/binary"
 	"math"
+
+	"GOTower/constants"
 )
 
 // TCP Message Constants
@@ -33,10 +34,11 @@ type Data struct {
 
 	Character uint8
 	Pattern   uint32
+	Hat       uint8
 }
 
 // ToBytes converts Data to a byte slice
-func (d *Data) ToBytes() []byte {
+func (d Data) ToBytes() []byte {
 	b := make([]byte, constants.UDPDatagramSize)
 	copy(b[0:37], d.UUID)
 	binary.LittleEndian.PutUint32(b[37:41], math.Float32bits(d.X))
@@ -48,6 +50,7 @@ func (d *Data) ToBytes() []byte {
 	b[53] = d.Palette
 	b[54] = d.Character
 	binary.LittleEndian.PutUint32(b[55:59], d.Pattern)
+	b[59] = d.Hat
 	b = append(b, []byte(d.Name)...)
 	return append(b, '\000')
 }
@@ -65,6 +68,7 @@ func DataFromBytes(b []byte) Data {
 	data.Palette = b[53]
 	data.Character = b[54]
 	data.Pattern = binary.LittleEndian.Uint32(b[55:59])
+	data.Hat = b[59]
 	return data
 }
 
@@ -73,7 +77,7 @@ type ChatMessage struct {
 	Msg  string
 }
 
-func (c *ChatMessage) ToBytes() []byte {
+func (c ChatMessage) ToBytes() []byte {
 	b := make([]byte, 2+len(c.Name)+len(c.Msg))
 	b[0] = TCPMsgChat
 	copy(b[1:1+len(c.Name)], c.Name)
